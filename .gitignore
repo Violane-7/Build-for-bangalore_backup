@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Environment files — NEVER commit these
+.env
+server/.env
+client/.env
+ai-service/.env
+
+# Build output
+client/dist/
+client/build/
+
+# ML model files (large binaries — store in cloud storage)
+ai-service/models/*.pkl
+ai-service/models/*.h5
+ai-service/models/*.joblib
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Misc
+*.tmp
+*.swp

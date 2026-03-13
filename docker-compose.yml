@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - ai-service
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./ai-service/.env
+    volumes:
+      - ./ai-service:/app
+
+# Note: MongoDB is assumed to be on MongoDB Atlas.
+# To run MongoDB locally instead, add a mongo service here:
+#
+#   mongo:
+#     image: mongo:7
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo_data:/data/db
+#
+# volumes:
+#   mongo_data:
