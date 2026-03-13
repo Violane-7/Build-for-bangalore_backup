@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link to="/exposome" style={linkStyle}>Exposome</Link>
           <Link to="/appointments" style={linkStyle}>Appointments</Link>
           <Link to="/grocery" style={linkStyle}>Grocery</Link>
-          <Link to="/goals" style={linkStyle}>Goals</Link>
+          <Link to="/goals" style={{ ...linkStyle, color: "#22c55e" }}>💰 EMI Goals</Link>
           <Link to="/wearable" style={linkStyle}>Wearable</Link>
           <Link to="/emergency" style={{ ...linkStyle, color: "#ff6666" }}>SOS</Link>
           <button

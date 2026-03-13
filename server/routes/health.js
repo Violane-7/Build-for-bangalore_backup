@@ -33,13 +33,22 @@ router.get("/metrics", auth, async (req, res) => {
 // POST /api/health/analyze — trigger AI risk prediction
 router.post("/analyze", auth, async (req, res) => {
   try {
-    const metrics = await HealthMetrics.find({ userId: req.user.id })
+    const allMetrics = await HealthMetrics.find({ userId: req.user.id })
       .sort({ date: -1 })
       .limit(30);
 
+    // If no metrics, provide a default baseline
+    const currentMetrics = allMetrics.length > 0 ? allMetrics[0] : {
+      steps: 0, sleep: 7, heartRate: 72, bloodPressureSystolic: 120,
+      bloodPressureDiastolic: 80, weight: 70, calories: 2000, 
+      screenTime: 3, waterIntake: 2, stressLevel: 3
+    };
+    const history = allMetrics.length > 1 ? allMetrics.slice(1) : [];
+
     const aiResponse = await aiService.predictRisk({
       userId: req.user.id,
-      metrics,
+      metrics: currentMetrics,
+      history: history
     });
 
     const prediction = await Prediction.create({
@@ -157,7 +166,8 @@ router.post("/baseline-compare", auth, async (req, res) => {
 // POST /api/health/goal-plan
 router.post("/goal-plan", auth, async (req, res) => {
   try {
-    const response = await aiService.goalPlan(req.body);
+    const payload = { ...req.body, userId: req.user.id };
+    const response = await aiService.goalPlan(payload);
     res.json(response.data);
   } catch (err) {
     res.status(500).json({ message: err.message });

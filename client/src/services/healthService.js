@@ -20,6 +20,11 @@ export const compareBaseline = (data) => api.post("/health/baseline-compare", da
 export const getGoalPlan = (data) => api.post("/health/goal-plan", data);
 export const detectEmergencyAI = (data) => api.post("/health/emergency-detect", data);
 
+// Insurance EMI Goals
+export const getInsuranceGoals = () => api.get("/insurance/goals");
+export const updateGoalProgress = (goalId, data) => api.patch(`/insurance/goals/${goalId}`, data);
+export const calculateEMIReduction = (data) => api.post("/insurance/calculate-emi", data);
+
 // Appointments
 export const createAppointment = (data) => api.post("/appointments", data);
 export const getAppointments = () => api.get("/appointments");

@@ -46,10 +46,9 @@ class GoalRequest(BaseModel):
         return v
 
     @validator('targetWeightKg')
-    def validate_weight_loss(cls, v, values):
-        if v is not None and 'currentWeightKg' in values:
-            if v >= values['currentWeightKg']:
-                raise ValueError('targetWeightKg must be less than currentWeightKg for weight loss')
+    def validate_weight_target(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError('targetWeightKg must be positive')
         return v
 
 # ------------------------------------------------------------------
