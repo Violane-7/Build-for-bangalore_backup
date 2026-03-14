@@ -13,6 +13,7 @@ import Grocery from "./pages/Grocery";
 import GoalPlanner from "./pages/GoalPlanner";
 import Wearable from "./pages/Wearable";
 import Emergency from "./pages/Emergency";
+import HealthChat from "./pages/HealthChat";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ export default function App() {
       <Route path="/goals" element={<PrivateRoute><GoalPlanner /></PrivateRoute>} />
       <Route path="/wearable" element={<PrivateRoute><Wearable /></PrivateRoute>} />
       <Route path="/emergency" element={<PrivateRoute><Emergency /></PrivateRoute>} />
+      <Route path="/chat" element={<PrivateRoute><HealthChat /></PrivateRoute>} />
     </Routes>
   );
 }

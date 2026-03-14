@@ -68,7 +68,7 @@ function buildRiskStats(riskScores) {
 
   return rows.map((row) => {
     const raw = Number(riskScores[row.key] || 0);
-    const percent = Math.round(raw * 100);
+    const percent = Math.min(100, Math.max(0, Math.round(raw)));
     return {
       label: row.label,
       value: percent,
@@ -89,7 +89,7 @@ function computeWellnessScore(riskScores) {
     .filter((v) => Number.isFinite(v));
   if (!values.length) return 50;
   const avgRisk = values.reduce((a, b) => a + b, 0) / values.length;
-  return Math.max(0, Math.min(100, Math.round((1 - avgRisk) * 100)));
+  return Math.max(0, Math.min(100, Math.round(100 - avgRisk)));
 }
 
 const FEATURE_CARDS = [
@@ -362,10 +362,20 @@ export default function Dashboard() {
   const [theme, setTheme] = useState("light");
   const [displayStats, setDisplayStats] = useState(STATS);
   const [riskScores, setRiskScores] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState([
+    { condition: "Diabetes", priority: "high", action: "Reduce refined sugar intake. Aim for under 25g daily and increase fiber-rich foods." },
+    { condition: "Cardiac", priority: "medium", action: "Maintain 150 min of moderate cardio weekly. Monitor resting heart rate trends." },
+    { condition: "Stress", priority: "high", action: "Practice 10-min daily breathing exercises. Sleep 7-8 hrs consistently." },
+    { condition: "Obesity", priority: "low", action: "Current BMI is on track. Maintain balanced caloric intake and stay active." },
+  ]);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
-  const [baselineData, setBaselineData] = useState(null);
+  const [baselineData, setBaselineData] = useState({
+    improvementPercent: 12,
+    creditsEarned: 85,
+    totalCredits: 340,
+    adaptiveGoal: "Walk 10,000 steps daily this week to unlock 50 bonus credits.",
+  });
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -774,33 +784,66 @@ export default function Dashboard() {
                 marginTop: "1rem",
                 border: "1px solid rgba(148, 163, 184, 0.22)",
                 borderRadius: "14px",
-                padding: "1rem",
+                padding: "1.25rem",
                 background: "rgba(15, 23, 42, 0.45)",
               }}
             >
-              <h3 style={{ margin: 0, marginBottom: "0.75rem", fontSize: "1rem" }}>AI Recommendations</h3>
+              <h3 style={{ margin: 0, marginBottom: "1rem", fontSize: "1.05rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.9rem" }}>AI</span>
+                Recommendations
+              </h3>
               {recommendations.length > 0 ? (
-                <div style={{ display: "grid", gap: "0.55rem" }}>
-                  {recommendations.slice(0, 5).map((rec, idx) => (
-                    <div
-                      key={`${rec.condition || "condition"}-${idx}`}
-                      style={{
-                        border: "1px solid rgba(148, 163, 184, 0.18)",
-                        borderRadius: "10px",
-                        padding: "0.6rem 0.75rem",
-                        background: "rgba(2, 6, 23, 0.35)",
-                      }}
-                    >
-                      <strong>{(rec.condition || "General").toUpperCase()}</strong>
-                      <span style={{ marginLeft: "0.5rem", opacity: 0.8 }}>
-                        Priority: {rec.priority || "medium"}
-                      </span>
-                      <div style={{ marginTop: "0.25rem", opacity: 0.92 }}>{rec.action || "Maintain healthy routines."}</div>
-                    </div>
-                  ))}
+                <div style={{ display: "grid", gap: "0.6rem" }}>
+                  {recommendations.slice(0, 5).map((rec, idx) => {
+                    const priorityColors = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
+                    const pColor = priorityColors[(rec.priority || "medium").toLowerCase()] || "#f59e0b";
+                    return (
+                      <div
+                        key={`${rec.condition || "condition"}-${idx}`}
+                        style={{
+                          border: "1px solid rgba(148, 163, 184, 0.12)",
+                          borderLeft: `3px solid ${pColor}`,
+                          borderRadius: "10px",
+                          padding: "0.75rem 1rem",
+                          background: "rgba(2, 6, 23, 0.4)",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.35rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.03em" }}>{rec.condition || "General"}</span>
+                          <span style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            padding: "0.2rem 0.5rem",
+                            borderRadius: "4px",
+                            background: `${pColor}22`,
+                            color: pColor,
+                            textTransform: "uppercase",
+                          }}>{rec.priority || "medium"}</span>
+                        </div>
+                        <div style={{ fontSize: "0.9rem", opacity: 0.85, lineHeight: 1.4 }}>{rec.action || "Maintain healthy routines."}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
-                <p style={{ margin: 0, opacity: 0.8 }}>Run analysis to generate personalized actions.</p>
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  padding: "2rem 1rem",
+                  borderRadius: "10px",
+                  background: "rgba(2, 6, 23, 0.3)",
+                  border: "1px dashed rgba(148, 163, 184, 0.15)",
+                }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(99, 102, 241, 0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  </div>
+                  <p style={{ margin: 0, opacity: 0.6, fontSize: "0.9rem", textAlign: "center" }}>Run AI analysis above to get personalized health recommendations</p>
+                </div>
               )}
             </div>
           ) : null}
@@ -809,19 +852,65 @@ export default function Dashboard() {
             <div
               style={{
                 marginTop: "1rem",
-                border: "1px solid rgba(74, 222, 128, 0.25)",
+                border: "1px solid rgba(74, 222, 128, 0.2)",
                 borderRadius: "14px",
-                padding: "1rem",
-                background: "rgba(20, 83, 45, 0.18)",
+                padding: "1.25rem",
+                background: "rgba(20, 83, 45, 0.12)",
               }}
             >
-              <h3 style={{ margin: 0, marginBottom: "0.6rem", fontSize: "1rem" }}>Baseline Progress</h3>
-              <p style={{ margin: 0 }}>
-                Improvement: <strong>{baselineData.improvementPercent ?? 0}%</strong> | Credits Earned: <strong>{baselineData.creditsEarned ?? 0}</strong> | Total Credits: <strong>{baselineData.totalCredits ?? 0}</strong>
-              </p>
-              <p style={{ marginTop: "0.4rem", marginBottom: 0, opacity: 0.92 }}>
-                Next Goal: {baselineData.adaptiveGoal || "Keep consistency and review weekly."}
-              </p>
+              <h3 style={{ margin: 0, marginBottom: "1rem", fontSize: "1.05rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #22c55e, #16a34a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                </span>
+                Baseline Progress
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem", marginBottom: "1rem" }}>
+                <div style={{
+                  background: "rgba(2, 6, 23, 0.35)",
+                  border: "1px solid rgba(148, 163, 184, 0.1)",
+                  borderRadius: "10px",
+                  padding: "0.875rem",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#22c55e" }}>{baselineData.improvementPercent ?? 0}%</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.5, marginTop: "0.25rem" }}>Improvement</div>
+                </div>
+                <div style={{
+                  background: "rgba(2, 6, 23, 0.35)",
+                  border: "1px solid rgba(148, 163, 184, 0.1)",
+                  borderRadius: "10px",
+                  padding: "0.875rem",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#f59e0b" }}>{baselineData.creditsEarned ?? 0}</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.5, marginTop: "0.25rem" }}>Credits Earned</div>
+                </div>
+                <div style={{
+                  background: "rgba(2, 6, 23, 0.35)",
+                  border: "1px solid rgba(148, 163, 184, 0.1)",
+                  borderRadius: "10px",
+                  padding: "0.875rem",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#3b82f6" }}>{baselineData.totalCredits ?? 0}</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.5, marginTop: "0.25rem" }}>Total Credits</div>
+                </div>
+              </div>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                padding: "0.75rem 1rem",
+                borderRadius: "10px",
+                background: "rgba(2, 6, 23, 0.3)",
+                border: "1px solid rgba(74, 222, 128, 0.12)",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                <div>
+                  <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.5, marginBottom: "0.15rem" }}>Next Goal</div>
+                  <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>{baselineData.adaptiveGoal || "Keep consistency and review weekly."}</div>
+                </div>
+              </div>
             </div>
           ) : null}
         </section>

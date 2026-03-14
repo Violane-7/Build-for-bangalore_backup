@@ -43,6 +43,7 @@ export default function Navbar() {
           <Link to="/grocery" style={linkStyle}>Grocery</Link>
           <Link to="/goals" style={{ ...linkStyle, color: "#22c55e" }}>💰 EMI Goals</Link>
           <Link to="/wearable" style={linkStyle}>Wearable</Link>
+          <Link to="/chat" style={linkStyle}>Chat</Link>
           <Link to="/emergency" style={{ ...linkStyle, color: "#ff6666" }}>SOS</Link>
           <button
             onClick={handleLogout}
